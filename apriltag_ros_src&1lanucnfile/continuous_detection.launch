@@ -1,0 +1,54 @@
+<launch>
+  <arg name="launch_prefix" default="" /> <!-- set to value="gdbserver localhost:10000" for remote debugging -->
+  <arg name="node_namespace" default="apriltag_ros_continuous_node" />
+ <!-- <param name="posefile" value="/home/ywang/Desktop/tag/pose.txt"/>--> 
+ <!-- <param name="trajfile" value="/home/ywang/Desktop/tag/traj.txt"/>--> 
+<!--   <node pkg="tf04_test" type="image_folder_publisher.py" name="image_folder_publisher" output="screen">-->
+<!--        <param name="topic_name" value="/navigation/left_camera/image_raw" />-->
+<!--        <param name="publish_rate" value="1"/>-->
+<!--        <param name="sort_files" value="True" />-->
+<!--        <param name="frame_id" value="left_camera" />-->
+<!--        <param name="sleep" value="0" />-->
+<!--        <param name="loop" value="-1" />-->
+<!--        <param name="image_folder" value="/home/nav/Desktop/out_1010" />-->
+<!--    </node>-->
+
+<!--  暂时没有camera相对小车car的即carname的明确名字，先用zed2相机或者自定义的camera-->
+  <param name="car_name" value="base_link"/>
+  <node pkg="tf04_test" name="car2start" type="car2start.py" output="screen"/>
+<!--  直接从起初就运行寻找end的节点，直到可以看到end就可以发布小车相对于start的位置-->
+<!--  <node pkg="tf04_test" name="car2keng2end" type="car2keng2end.py" output="screen"/>-->
+<!--  <node pkg="tf04_test" name="tf_dong" type="tf_dong.py" output="screen" />-->
+<!--    <node pkg="tf04_test" name="gt" type="tagceju.py" output="screen"/>-->
+<!-- 读取图片发布进行订阅 -->
+ <arg name="camera_name" default="/navigation/left_camera" />
+ <arg name="image_topic" default="/image_raw" />
+<!--   <arg name="camera_name" default="/zed2/zed_node/left" /> -->
+<!--   <arg name="image_topic" default="image_rect_color" /> -->
+<!--   <arg name="camera_link" default="zed2_left_camera_frame"/> -->
+<!--   <param name="camera_linkname" value="zed2_left_camera_frame"/> -->
+  <param name="camera_linkname" value="camera_link"/>
+
+  <!-- Set parameters -->
+  <rosparam command="load" file="$(find apriltag_ros)/config/settings.yaml" ns="$(arg node_namespace)" />
+  <rosparam command="load" file="$(find apriltag_ros)/config/tags.yaml" ns="$(arg node_namespace)" />
+  
+  <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="$(arg node_namespace)" clear_params="true" output="screen" launch-prefix="$(arg launch_prefix)" >
+    <!-- Remap topics from those used in code to those on the ROS network -->
+<!--    <remap from="image_rect" to="$(arg image_topic)" />-->
+<!--    <remap from="camera_info" to="/camera_info" />-->
+    <remap from="image_rect" to="$(arg camera_name)/$(arg image_topic)" />
+    <remap from="camera_info" to="$(arg camera_name)/camera_info" />
+    <param name="publish_tag_detections_image" type="bool" value="false" />      <!-- default: false -->
+  </node>
+<!--   <include file="$(find zed_wrapper)/launch/zed2.launch"/> -->
+  <node pkg="rviz" type="rviz" name="tag_rviz" args="-d $(find apriltag_ros)/config/tag_rviz.rviz"/>
+<!--  tag_1转系成start并且发布，使car2start中程序订阅到-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tag2start" args="0 0 0 1.57 0 0 /tag_1 /start"/>  <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="tag2start" args="0 0 0 3.14 -1.57 0 /tag_1 /start"/> -->
+<!--   <node pkg="tf04_test" type="test01_new_turtle_p.py" name="tag_gt" output="screen"/> -->
+<!--   <node pkg="tf04_test" type="tag2tag.py" name="imu_gt" output="screen"/> -->
+
+<!--    <node pkg="tf2_ros" type="static_transform_publisher" name="tag2end" args="0 0 0 3.14 -1.57 0 /tag_5 /end"/>--> -->
+<!--   <node pkg="tf2_ros" type="static_transform_publisher" name="camera2base" args="0 0 0 0 0 0 /base_link /zed2_left_camera_frame"/> -->
+<!-- 以上为了转成zed2相对于car的坐标系转化-->
+</launch>
