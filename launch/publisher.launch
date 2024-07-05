@@ -1,0 +1,11 @@
+<launch>
+    <node pkg="tf04_test" type="image_folder_publisher.py" name="image_folder_publisher" output="screen">
+        <param name="topic_name" value="/navigation/left_camera/image_raw" />
+        <param name="publish_rate" value="10"/>
+        <param name="sort_files" value="True" />
+        <param name="frame_id" value="left_navigation_camera_link" />
+        <param name="sleep" value="0" />
+        <param name="loop" value="-1" />
+        <param name="image_folder" value="/usr/src/app/tag_image" />
+    </node>
+</launch>
